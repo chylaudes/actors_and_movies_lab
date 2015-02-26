@@ -25,3 +25,22 @@
 <br><br>
 
 <%= link_to "Back to movies", movies_path %>
+
+
+<h1>Comments</h1>
+
+
+  <% @comments.each do |comment| %>
+    <li><%= comment.content %></li>
+  <% end %>
+
+
+<h2>Add a new Comment!</h2>
+<%= form_for [@movie, Comment.new] do |form| %>
+<!--   <ol class="formList"> -->
+      <%= form.label :content %>
+      <%= form.text_area :content, :rows => 5 %>
+
+   <%= form.submit "Add comment" %>
+<!--   </ol> -->
+<% end %>
