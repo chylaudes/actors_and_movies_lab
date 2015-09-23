@@ -1,55 +1,165 @@
-Actors and Movies
-=================
+#Views: The Chief of Sexy
+=============================
 
-Let's make a Ruby on Rails app that allows us to list some of our
-favorite actors and movies. We should be able to perform all of the
-CRUD operations on both Actors and Movies. Additionally, we should
-be able to indicate which actors are in which movies.
+The view is the Presentation layer. It's what the user sees and interacts with, essentially the web pages. The HTML, the CSS and the JavaScript. The controller processes and responds to user events, such as clicking on links and submitting forms.
 
-Actors and Movies have an interesting relationship because a Movie can
-have many Actors and an Actor can also have many Movies. This is a
-classic many-to-many problem. If we try to use a one-to-many
-relationship we would either limit a Movie to having one Actor or
-an Actor to appearing in only one Movie.
 
-Things we'll need
------------------
+After putting into this command in your terminal:
 
-One approach would be to decide what we'd need for Actors and Movies
-separately, and then think about joining them later. Another approach
-would be to get the relationships setup first and then fill out the
-rest of your app. I don't know which is better. I took the first
-approach but I feel dirty admitting it.
+```
+rails g controller artists index show new edit
 
-### For Movies
+```
+We not only created the artist_controller.rb, but also the an artist folder inside of the views folder, and an `index.html.erb, show.html.erb, new.html.erb, edit.html.erb` that coresponds with each methods from the artist controller!
 
-We'll need routes, a model, and a controller. Look into `resources`
-for creating the necessary routes and `rails generate` (`rails g`)
-for creating models (and migrations) and controllers.
+![](http://i.imgur.com/EHoJ3JO.png)
 
-### For Actors
 
-It will be the same as what you did for Movies, but for Actors this
-time.
+Essentially each of these templates are get pages that either shows All Artists(`index.html.erb`), or One Artist(`show.html.erb`)
 
-### For Actors and Movies
+###But let's focus on the New and Edit pages
+-----------------------
 
-A few things need to happen at this phase. You'll need to make
-decisions around:
+The `new.html.erb` and `edit.html.erb` normally shows forms that submit information to the server.
 
-- setting up the many-to-many relationship in the database and models,
-- setting up the routes and controller actions, and
-- integrating this feature into your UI.
+`new.html.erb` is a page for the form to `create` a new Artist
 
-Notes
------
+`edit.html.erb` is a page for the form to `update` a new Artist
 
-This assignment is purposely open-ended. You get to take what you
-learned (right, guys?) in the weekend lab and integrate in the
-many-to-many relationship that we discussed this morning. On one hand
-it's nothing too different from what you've done, on the other it's a
-sizeable lab with many pieces to put together.
+for our forms we're going to use the `gem simple_form` to render our Forms.
 
-The only requirements are that you allow the user to indicate that
-many actors can appear in a movie and an individual actor can appear
-in many different movies. How to do that is largely left up to you.
+#Simple Form
+
+###Installation
+-------------------------
+Add it to your Gemfile:
+
+```
+gem 'simple_form
+```
+Run the command in Terminal:
+
+```
+bundle install
+```
+If you're using bootstrap, run this command in terminal:
+
+```
+rails generate simple_form:install --bootstrap
+```
+
+
+####Let's create a simple_form in the new.html.erb
+----------------------
+
+In our:```app/controllers/artists_controller.rb```
+
+```
+class ArtistsController < ApplicationController
+
+...
+
+ def new
+    @artist = Artist.new
+  	#Creating an empty Artist object for our form
+ end
+  
+ ...
+  #POST /artists
+  def create
+    @artist = Artist.new(artist_params)
+    if @artist.save
+      redirect_to artists_path
+    else
+      render :new
+    end
+  end
+    #the create method will be used after submitting our form in /artists/new
+ ...
+
+```
+
+In our:```app/views/artists/new.html.erb```
+
+    <%= simple_form_for @artist do |f| %>
+      <!-- @artist = Artist.new  from the new method in the artist controller -->
+      <%= f.input :name, label: false, input_html: { placeholder: 'Name' } %>
+      <%= f.input :description, label: false, as: :text, input_html: { placeholder: "Artist Bio" } %>
+      <%= f.input :image_url, label:false, input_html: { placeholder: 'Image url' } %>      
+            
+            <!-- f.input is method that first takes in the attribute of the artist ex: ':name',':description', ':image_url' then a couple of options for the form. Then the 'label' option tells us if we want a label in our input.  Then the input_html option needs an object with a key 'placeholder' and a value of what you want to say inside of the input field.  -->
+            
+      <%= f.submit "Submit".html_safe, class: "btn btn-lg btn-danger" %>
+      
+      <!-- f.submit is method creates a button to submit the form using the create action and making a POST request to the rails server. The 'class:' refers to the style class of the red button from bootstrap -->
+      <% end %>
+
+In the view it should look like this:
+
+![](http://i.imgur.com/z7upBQf.png =700x)
+
+
+
+####Let's create a simple_form in the edit.html.erb
+----------------------
+
+In our:
+
+```
+app/controllers/artists_controller.rb
+```
+
+```
+class ArtistsController < ApplicationController
+
+...
+
+#GET /artists/:id/edit
+ def edit
+    @artist = Artist.find(params[:id])
+    #first you find the artist you want to edit
+ end
+  
+ ...
+  #PATCH /artists/:id
+  def update
+  @artist = Artist.find(params[:id])
+  @artist.update_attributes artist_params
+    if @artist.save
+      redirect_to artist_path(@artist)
+    else
+      render :new
+    end
+  end
+ ...
+ 
+ #update method is similar to the create method you just need to find the ONE Artist you're updating.
+
+```
+
+
+In our:```app/views/artists/edit.html.erb```
+
+      <%= simple_form_for @artist do |f| %>
+      <%= f.input :name, label: false, input_html: { placeholder: 'Name' } %>
+      <%= f.input :description, label: false, as: :text, input_html: { placeholder: "Artist Bio" } %>
+      <%= f.input :image_url, label:false, input_html: { placeholder: 'Image url' } %>
+      <%= f.submit "Submit".html_safe, class: "btn btn-lg btn-danger" %>
+    <% end %>
+    
+
+![](http://i.imgur.com/irUntg2.png)
+
+
+#####The form is pretty much the same as the new.    
+#####All we had to change was the instance variable @artist to edit that ONE artist.  
+
+
+###Resources
+--------------------
+
+If you want to look into more about simple form and its other options here's a link to a Railscast that will clearly show you have to use simple_form:
+
+[Railscast on Simple_form](http://railscasts.com/episodes/234-simple-form?autoplay=true)
+
+Good Luck!
